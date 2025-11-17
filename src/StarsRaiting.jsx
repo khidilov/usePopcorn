@@ -16,6 +16,7 @@ StarsRating.propTypes = {
   onSetRating: PropTypes.func,
   messages: PropTypes.array,
 };
+
 export default function StarsRating({
   amount = 5,
   color = "black",
@@ -28,6 +29,7 @@ export default function StarsRating({
   const [tempRating, setTempRating] = useState(0);
   function handleRating(rate) {
     setRating(rate);
+    onSetRating(rate);
   }
   const textStyle = {
     margin: "0",
