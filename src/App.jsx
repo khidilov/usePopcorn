@@ -1,0 +1,321 @@
+import { useEffect, useState } from "react";
+import ErrorMessage from "./Error";
+const key = "4afe83df";
+export default function App() {
+  const [watched, setWatched] = useState(tempWatchedData);
+  const [movies, setMovies] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [query, setQuery] = useState("Leon");
+  const [selectedId, setSelectedId] = useState(null);
+
+  function handleSelection(id) {
+    setSelectedId((cur) => (cur === id ? null : id));
+  }
+
+  function handleCloseMovie() {
+    setSelectedId(null);
+  }
+
+  useEffect(
+    function () {
+      async function fetchMovieData() {
+        try {
+          setError("");
+          setIsLoading(true);
+          const res = await fetch(
+            `http://www.omdbapi.com/?apikey=${key}&s=${query}`
+          );
+          if (!res.ok) {
+            throw new Error("Oops you lost your connection");
+          }
+
+          const data = await res.json();
+          if (data.Response === "False") {
+            throw new Error("Are you sure about the name?");
+          }
+          setMovies(data.Search);
+        } catch (err) {
+          console.log(err);
+          setError(err.message);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+      if (query.length < 3) {
+        setMovies([]);
+        setError("");
+        return;
+      }
+      fetchMovieData();
+    },
+    [query]
+  );
+  return (
+    <>
+      <NavBar>
+        <Logo />
+        <SearchBar query={query} setQuery={setQuery} />
+        <NumOfFoundItems movies={movies} />
+      </NavBar>
+      <Main>
+        <Container>
+          {isLoading && <Loader />}
+          {!isLoading && !error && (
+            <MoviesList onSelection={handleSelection} movies={movies} />
+          )}
+          {error && <ErrorMessage message={error} />}
+        </Container>
+
+        <Container>
+          {selectedId ? (
+            <MovieDetails
+              onSelect={handleSelection}
+              onClose={handleCloseMovie}
+              selectedId={selectedId}
+            />
+          ) : (
+            <>
+              <WatchedStats watched={watched} />
+              <WatchedMoviesList watched={watched} />
+            </>
+          )}{" "}
+        </Container>
+      </Main>
+    </>
+  );
+}
+
+function Main({ children }) {
+  return <main className="main">{children}</main>;
+}
+
+function Loader() {
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100%",
+      }}
+    >
+      <div className="loader">
+        <div className="box1"></div>
+        <div className="box2"></div>
+        <div className="box3"></div>
+      </div>
+    </div>
+  );
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+
+function NavBar({ children }) {
+  return <nav className="nav-bar">{children}</nav>;
+}
+
+function Logo() {
+  return (
+    <div className="logo">
+      <span role="img">🍿</span>
+      <h1>usePopcorn</h1>
+    </div>
+  );
+}
+
+function SearchBar({ query, setQuery }) {
+  return (
+    <input
+      className="search"
+      type="text"
+      placeholder="Search movies..."
+      value={query}
+      onChange={(e) => setQuery(e.target.value)}
+    />
+  );
+}
+
+function NumOfFoundItems({ movies }) {
+  return (
+    <p className="num-results">
+      Found <strong>{movies.length}</strong> results
+    </p>
+  );
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+
+function Container({ children }) {
+  const [isOpen, setIsOpen] = useState(true);
+  return (
+    <div className="box">
+      <button className="btn-toggle" onClick={() => setIsOpen((open) => !open)}>
+        {isOpen ? "–" : "+"}
+      </button>
+      {isOpen && children}
+    </div>
+  );
+}
+
+function MoviesList({ movies, onSelection }) {
+  return (
+    <ul className="list list-movies">
+      {movies.length > 0
+        ? movies.map((movie) => (
+            <Movie movie={movie} onSelection={onSelection} key={movie.imdbID} />
+          ))
+        : null}
+    </ul>
+  );
+}
+
+function MovieDetails({ selectedId, onClose }) {
+  return (
+    <div>
+      <button className="btn-back" onClick={onClose}>
+        &larr;
+      </button>
+      {selectedId}
+    </div>
+  );
+}
+
+function Movie({ movie, onSelection }) {
+  return (
+    <li onClick={() => onSelection(movie.imdbID)}>
+      <img src={movie.Poster} alt={`${movie.Title} poster`} />
+      <h3>{movie.Title}</h3>
+      <div>
+        <p>
+          <span>🗓</span>
+          <span>{movie.Year}</span>
+        </p>
+      </div>
+    </li>
+  );
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+
+function WatchedStats({ watched }) {
+  const avgImdbRating = average(watched.map((movie) => movie.imdbRating));
+  const avgUserRating = average(watched.map((movie) => movie.userRating));
+  const avgRuntime = average(watched.map((movie) => movie.runtime));
+  return (
+    <div className="summary">
+      <h2>Movies you watched</h2>
+      <div>
+        <p>
+          <span>#️⃣</span>
+          <span>{watched.length} movies</span>
+        </p>
+        <p>
+          <span>⭐️</span>
+          <span>{avgImdbRating}</span>
+        </p>
+        <p>
+          <span>🌟</span>
+          <span>{avgUserRating}</span>
+        </p>
+        <p>
+          <span>⏳</span>
+          <span>{avgRuntime} min</span>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function WatchedMoviesList({ watched }) {
+  return (
+    <ul className="list">
+      {watched.map((movie) => (
+        <WatchedMovie movie={movie} key={movie.imdbID} />
+      ))}
+    </ul>
+  );
+}
+
+function WatchedMovie({ movie }) {
+  return (
+    <li>
+      <img src={movie.Poster} alt={`${movie.Title} poster`} />
+      <h3>{movie.Title}</h3>
+      <div>
+        <p>
+          <span>⭐️</span>
+          <span>{movie.imdbRating}</span>
+        </p>
+        <p>
+          <span>🌟</span>
+          <span>{movie.userRating}</span>
+        </p>
+        <p>
+          <span>⏳</span>
+          <span>{movie.runtime} min</span>
+        </p>
+      </div>
+    </li>
+  );
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+
+// const tempMovieData = [
+//   {
+//     imdbID: "tt1375666",
+//     Title: "Inception",
+//     Year: "2010",
+//     Poster:
+//       "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
+//   },
+//   {
+//     imdbID: "tt0133093",
+//     Title: "The Matrix",
+//     Year: "1999",
+//     Poster:
+//       "https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg",
+//   },
+//   {
+//     imdbID: "tt6751668",
+//     Title: "Parasite",
+//     Year: "2019",
+//     Poster:
+//       "https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_SX300.jpg",
+//   },
+// ];
+
+const tempWatchedData = [
+  {
+    imdbID: "tt1375666",
+    Title: "Inception",
+    Year: "2010",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
+    runtime: 148,
+    imdbRating: 8.8,
+    userRating: 10,
+  },
+  {
+    imdbID: "tt0088763",
+    Title: "Back to the Future",
+    Year: "1985",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
+    runtime: 116,
+    imdbRating: 8.5,
+    userRating: 9,
+  },
+];
+
+const average = (arr) =>
+  arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
