@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import ErrorMessage from "./Error";
+import ErrorMessage from "./Error.jsx";
 import { Main } from "./Main.1";
 import { Loader } from "./Loader";
 import { NavBar } from "./NavBar";
@@ -62,7 +62,10 @@ export default function App() {
           setMovies(data.Search);
           setError(""); // Line 47
         } catch (err) {
-          if (err.code !== 20) setError(err.message);
+          if (err.message !== "AbortError") {
+            setError(err.message);
+            console.error(err);
+          }
         } finally {
           setIsLoading(false);
         }
