@@ -211,10 +211,6 @@ function MovieDetails({ selectedId, onClose, onAddWatched, watched }) {
     getMovieDetails();
   }, [selectedId]);
 
-  if (isLoading) {
-    return <Loader />;
-  }
-
   const {
     Title: title,
     Released: released,
@@ -239,6 +235,15 @@ function MovieDetails({ selectedId, onClose, onAddWatched, watched }) {
     onAddWatched(newWatchedMovie);
     onClose();
   }
+
+  useEffect(() => {
+    document.title = `Movie | ${title}`;
+  }, [title, selectedItem]);
+
+  if (isLoading) {
+    return <Loader />;
+  }
+
   return (
     <div className="details">
       <header>
