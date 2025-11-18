@@ -22,7 +22,7 @@ const Error = ({ message }) => {
             <div className="a_base" />
           </div>
           <div className="tv">
-            <div className="cruve">
+            <div className="curve">
               <svg
                 className="curve_svg"
                 version="1.1"
