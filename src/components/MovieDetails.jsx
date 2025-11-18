@@ -15,7 +15,7 @@ export function MovieDetails({ selectedId, onClose, onAddWatched, watched }) {
       try {
         setIsLoading(true);
         const res = await fetch(
-          `http://www.omdbapi.com/?apikey=${key}&i=${selectedId}`
+          `https://www.omdbapi.com/?apikey=${key}&i=${selectedId}`
         );
         const data = await res.json();
         setSelectedItem(data);
