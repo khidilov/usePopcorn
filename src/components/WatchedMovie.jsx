@@ -20,7 +20,6 @@ export function WatchedMovie({ movie, onDelete }) {
       <button
         className="btn-delete"
         onClick={() => {
-          console.log(movie.imdbID);
           onDelete(movie.imdbID);
         }}
       >
