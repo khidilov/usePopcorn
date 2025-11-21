@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ErrorMessage from "./Error.jsx";
 import { Main } from "./Main.1";
 import { Loader } from "./Loader";
@@ -11,15 +11,14 @@ import { MoviesList } from "./MoviesList";
 import { MovieDetails } from "./MovieDetails";
 import { WatchedStats } from "./WatchedStats";
 import { WatchedMoviesList } from "./WatchedMoviesList";
-import useMovies from "../hooks/useMovies.jsx";
+import { useMovies } from "../hooks/useMovies.jsx";
+import { useLocaleStorageState } from "../hooks/useLocaleStorageState.jsx";
+
 export const key = "4afe83df";
 
 export default function App() {
   const [query, setQuery] = useState("Leon");
-  const [watched, setWatched] = useState(() => {
-    const storedVal = localStorage.getItem("watched");
-    return JSON.parse(storedVal);
-  });
+  const [watched, setWatched] = useLocaleStorageState([], "watched");
   const { movies, error, isLoading } = useMovies(query);
 
   const [selectedId, setSelectedId] = useState(null);
@@ -41,10 +40,6 @@ export default function App() {
       return c.filter((mov) => mov.imdbID !== id);
     });
   }
-
-  useEffect(() => {
-    localStorage.setItem("watched", JSON.stringify(watched));
-  }, [watched]);
 
   return (
     <>

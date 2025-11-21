@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 
 export const key = "4afe83df";
-export default function useMovies(query) {
+export function useMovies(query) {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
   useEffect(
     function () {
       const controller = new AbortController();
@@ -16,8 +17,8 @@ export default function useMovies(query) {
         }
 
         try {
-          // setError("");
           setIsLoading(true);
+          setError("");
           const res = await fetch(
             `https://www.omdbapi.com/?apikey=${key}&s=${query}`,
             { signal: controller.signal }
@@ -36,9 +37,9 @@ export default function useMovies(query) {
           setMovies(data.Search);
           setError("");
         } catch (err) {
-          if (err.message !== "AbortError") {
+          if (err.name !== "AbortError") {
+            console.log({ err });
             setError(err.message);
-            console.error(err);
           }
         } finally {
           setIsLoading(false);
@@ -46,6 +47,7 @@ export default function useMovies(query) {
       }
 
       fetchMovieData();
+
       return () => {
         controller.abort();
       };
