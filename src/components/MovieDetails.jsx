@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { key } from "./App";
 import { Loader } from "../components/Loader";
 import StarsRating from "./StarsRating";
+import { useKey } from "../hooks/useKey";
 
 export function MovieDetails({ selectedId, onClose, onAddWatched, watched }) {
   const [selectedItem, setSelectedItem] = useState({});
@@ -34,16 +35,7 @@ export function MovieDetails({ selectedId, onClose, onAddWatched, watched }) {
     }
     getMovieDetails();
   }, [selectedId]);
-  useEffect(() => {
-    const callback = (e) => {
-      if (e.target.key === "Escape");
-      onClose();
-    };
-    document.addEventListener("keydown", callback);
-    return () => {
-      document.removeEventListener("keydown", callback);
-    };
-  }, [onClose]);
+  useKey("Escape", onClose);
   const {
     Title: title,
     Released: released,
