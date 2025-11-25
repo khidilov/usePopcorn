@@ -1,4 +1,4 @@
-PopkornAl (buyPopcorn) 🍿
+PopkornAl (usePopcorn) 🍿
 
 A self-study React app that lets you search for movies, rate them, and keep a personal watchlist stored in local storage. Built to practice React fundamentals, hooks, and API handling.
 
